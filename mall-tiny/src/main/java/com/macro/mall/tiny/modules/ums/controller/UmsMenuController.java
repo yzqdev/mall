@@ -79,6 +79,8 @@ public class UmsMenuController {
                                                   @RequestParam(value = "pageSize", defaultValue = "5") Integer pageSize,
                                                   @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum) {
         Page<UmsMenu> menuList = menuService.list(parentId, pageSize, pageNum);
+        System.out.println(menuService);
+        System.out.println("这是menulist");
         return CommonResult.success(CommonPage.restPage(menuList));
     }
 
