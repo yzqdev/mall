@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,8 +44,11 @@ public class JwtTokenUtil {
      */
     private String generateToken(Map<String, Object> claims) {
         Algorithm algorithm = Algorithm.HMAC512(secret);
+        System.out.println("生成的过期时间");
+        System.out.println(generateExpirationDate());
         return JWT.create()
-                .withHeader(claims)
+                .withClaim(CLAIM_KEY_USERNAME, String.valueOf(claims.get(CLAIM_KEY_USERNAME)))
+                .withClaim(CLAIM_KEY_CREATED, String.valueOf(claims.get(CLAIM_KEY_CREATED)))
                 .withExpiresAt(generateExpirationDate())
                 .sign(algorithm);
 
@@ -53,11 +57,11 @@ public class JwtTokenUtil {
     /**
      * 从token中获取JWT中的负载
      */
-    private Map<String,Claim> getClaimsFromToken(String token) {
-        Map<String,Claim> claims = null;
+    private Map<String, Claim> getClaimsFromToken(String token) {
+        Map<String, Claim> claims = new HashMap<>(2);
         Algorithm algorithm = Algorithm.HMAC512(secret);
         JWTVerifier verifier = JWT.require(algorithm)
-                .withIssuer("auth0")
+
                 .build(); //Reusable verifier instance
         DecodedJWT jwt = verifier.verify(token);
         try {
@@ -73,8 +77,8 @@ public class JwtTokenUtil {
     /**
      * 生成token的过期时间
      */
-    private Date generateExpirationDate() {
-        return new Date(System.currentTimeMillis() + expiration * 1000);
+    private Timestamp generateExpirationDate() {
+        return new Timestamp(System.currentTimeMillis() + expiration * 1000);
     }
 
     /**
@@ -83,7 +87,8 @@ public class JwtTokenUtil {
     public String getUserNameFromToken(String token) {
         String username;
         try {
-            Map<String,Claim> claims = getClaimsFromToken(token);
+            Map<String, Claim> claims = getClaimsFromToken(token);
+            System.out.println(claims);
             username = claims.get(CLAIM_KEY_USERNAME).asString();
         } catch (Exception e) {
             username = null;
@@ -107,6 +112,9 @@ public class JwtTokenUtil {
      */
     private boolean isTokenExpired(String token) {
         Date expiredDate = getExpiredDateFromToken(token);
+        System.out.println("过期了吗");
+        System.out.println(expiredDate);
+        System.out.println(new Date());
         return expiredDate.before(new Date());
     }
 
@@ -114,8 +122,13 @@ public class JwtTokenUtil {
      * 从token中获取过期时间
      */
     private Date getExpiredDateFromToken(String token) {
-        Map<String, Claim> claims = getClaimsFromToken(token);
-       return claims.get(CLAIM_KEY_CREATED).asDate();
+        Algorithm algorithm = Algorithm.HMAC512(secret);
+        JWTVerifier verifier = JWT.require(algorithm)
+
+                .build(); //Reusable verifier instance
+        DecodedJWT jwt = verifier.verify(token);
+
+        return jwt.getExpiresAt() ;
 
     }
 
@@ -123,9 +136,9 @@ public class JwtTokenUtil {
      * 根据用户信息生成token
      */
     public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
+        Map<String, Object> claims = new HashMap<>(2);
         claims.put(CLAIM_KEY_USERNAME, userDetails.getUsername());
-        claims.put(CLAIM_KEY_CREATED, new Date());
+        claims.put(CLAIM_KEY_CREATED, System.currentTimeMillis());
         return generateToken(claims);
     }
 
@@ -135,28 +148,28 @@ public class JwtTokenUtil {
      * @param oldToken 带tokenHead的token
      */
     public String refreshHeadToken(String oldToken) {
-        if(StrUtil.isEmpty(oldToken)){
+        if (StrUtil.isEmpty(oldToken)) {
             return null;
         }
         String token = oldToken.substring(tokenHead.length());
-        if(StrUtil.isEmpty(token)){
+        if (StrUtil.isEmpty(token)) {
             return null;
         }
         //token校验不通过
-        Map<String,Claim> claims = getClaimsFromToken(token);
-        if(claims==null){
+        Map<String, Claim> claims = getClaimsFromToken(token);
+        if (claims == null) {
             return null;
         }
         //如果token已经过期，不支持刷新
-        if(isTokenExpired(token)){
+        if (isTokenExpired(token)) {
             return null;
         }
-        Map<String,Object> claim = new HashMap<>(2);
+        Map<String, Object> claim = new HashMap<>(2);
         //如果token在30分钟之内刚刷新过，返回原token
-        if(tokenRefreshJustBefore(token,30*60)){
+        if (tokenRefreshJustBefore(token, 30 * 60)) {
             return token;
-        }else{
-            claim.put(CLAIM_KEY_USERNAME,claims.get(CLAIM_KEY_USERNAME).asString());
+        } else {
+            claim.put(CLAIM_KEY_USERNAME, claims.get(CLAIM_KEY_USERNAME).asString());
             claim.put(CLAIM_KEY_CREATED, new Date());
             return generateToken(claim);
         }
@@ -164,15 +177,16 @@ public class JwtTokenUtil {
 
     /**
      * 判断token在指定时间内是否刚刚刷新过
+     *
      * @param token 原token
-     * @param time 指定时间（秒）
+     * @param time  指定时间（秒）
      */
     private boolean tokenRefreshJustBefore(String token, int time) {
-       Map<String,Claim> claims = getClaimsFromToken(token);
+        Map<String, Claim> claims = getClaimsFromToken(token);
         Date created = claims.get(CLAIM_KEY_CREATED).asDate();
         Date refreshDate = new Date();
         //刷新时间在创建时间的指定时间内
-        if(refreshDate.after(created)&&refreshDate.before(DateUtil.offsetSecond(created,time))){
+        if (refreshDate.after(created) && refreshDate.before(DateUtil.offsetSecond(created, time))) {
             return true;
         }
         return false;
