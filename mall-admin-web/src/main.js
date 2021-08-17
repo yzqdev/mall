@@ -9,9 +9,9 @@ import VCharts from 'v-charts'
 
 import '@/styles/index.scss' // global css
 
-import App from './App'
-import router from './router'
-import store from './store'
+import App from '@/App'
+import router from '@/router'
+import store from '@/store'
 
 import '@/icons' // icon
 import '@/permission' // permission control

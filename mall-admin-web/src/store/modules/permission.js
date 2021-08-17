@@ -1,5 +1,4 @@
-import { asyncRouterMap, constantRouterMap } from '@/router';
-
+import { asyncRouterMap, constantRouterMap } from '@/router.js';
 //判断是否有权限访问该菜单
 function hasPermission(menus, route) {
   if (route.name) {
@@ -66,7 +65,7 @@ function compare(p){
 
 const permission = {
   state: {
-    routers: constantRouterMap,
+    routers:"constantRouterMap",
     addRouters: []
   },
   mutations: {

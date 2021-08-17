@@ -1,10 +1,10 @@
 import Vue from 'vue'
-import Router from 'vue-router'
+import VueRouter from 'vue-router'
 
-Vue.use(Router)
+Vue.use(VueRouter)
 
 /* Layout */
-import Layout from './views/layout/Layout'
+import Layout from '@/views/layout/Layout'
 
 /**
  * hidden: true                   if `hidden:true` will not show in the sidebar(default is false)
@@ -33,7 +33,8 @@ export const constantRouterMap = [
     }]
   }
 ]
-
+console.log(`%croutetr.js`,`color:red;font-size:16px;background:transparent`)
+console.log(constantRouterMap)
 export const asyncRouterMap = [
   {
     path: '/pms',
@@ -361,7 +362,7 @@ export const asyncRouterMap = [
   {path: '*', redirect: '/404', hidden: true}
 ]
 
-export default new Router({
+export default new VueRouter({
   // mode: 'history', //后端支持可开
   scrollBehavior: () => ({y: 0}),
   routes: constantRouterMap

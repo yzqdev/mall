@@ -6,10 +6,12 @@
   "private": true,
   "scripts": {
     "dev": "yarn&&vite --host",
+    "dev-serve": "vue-cli-service serve",
     "build": "vite build",
     "serve": "vite preview"
   },
   "dependencies": {
+    "@vue/cli-service": "^5.0.0-beta.3",
     "axios": "^0.21.1",
     "echarts": "^4.9.0",
     "element-ui": "^2.15.5",
@@ -18,6 +20,7 @@
     "nprogress": "^0.2.0",
     "prettier": "^2.3.2",
     "sass": "^1.38.0",
+    "sass-loader": "^12.1.0",
     "v-charts": "^1.19.0",
     "v-distpicker": "^1.2.12",
     "vite": "^2.5.0",
