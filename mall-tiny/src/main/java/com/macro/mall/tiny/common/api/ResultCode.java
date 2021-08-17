@@ -2,9 +2,14 @@ package com.macro.mall.tiny.common.api;
 
 /**
  * 枚举了一些常用API操作码
- * Created by macro on 2019/4/19.
+ *
+ * @author macro
+ * @date 2019/4/19
  */
 public enum ResultCode implements IErrorCode {
+    /**
+     * resultCode
+     */
     SUCCESS(200, "操作成功"),
     FAILED(500, "操作失败"),
     VALIDATE_FAILED(404, "参数检验失败"),

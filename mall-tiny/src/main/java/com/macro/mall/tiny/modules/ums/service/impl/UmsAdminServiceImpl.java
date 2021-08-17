@@ -102,6 +102,8 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper,UmsAdmin> im
         //密码需要客户端加密后传递
         try {
             UserDetails userDetails = loadUserByUsername(username);
+            System.out.println("到达login");
+            System.out.println(passwordEncoder.encode(password));
             if(!passwordEncoder.matches(password,userDetails.getPassword())){
                 Asserts.fail("密码不正确");
             }
