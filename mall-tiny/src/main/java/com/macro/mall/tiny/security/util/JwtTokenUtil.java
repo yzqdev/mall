@@ -1,10 +1,12 @@
-package com.macro.mall.security.util;
+package com.macro.mall.tiny.security.util;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,23 +42,28 @@ public class JwtTokenUtil {
      * 根据负责生成JWT的token
      */
     private String generateToken(Map<String, Object> claims) {
-        return Jwts.builder()
-                .setClaims(claims)
-                .setExpiration(generateExpirationDate())
-                .signWith(SignatureAlgorithm.HS512, secret)
-                .compact();
+        Algorithm algorithm = Algorithm.HMAC512(secret);
+        return JWT.create()
+                .withHeader(claims)
+                .withExpiresAt(generateExpirationDate())
+                .sign(algorithm);
+
     }
 
     /**
      * 从token中获取JWT中的负载
      */
-    private Claims getClaimsFromToken(String token) {
-        Claims claims = null;
+    private Map<String,Claim> getClaimsFromToken(String token) {
+        Map<String,Claim> claims = null;
+        Algorithm algorithm = Algorithm.HMAC512(secret);
+        JWTVerifier verifier = JWT.require(algorithm)
+                .withIssuer("auth0")
+                .build(); //Reusable verifier instance
+        DecodedJWT jwt = verifier.verify(token);
         try {
-            claims = Jwts.parser()
-                    .setSigningKey(secret)
-                    .parseClaimsJws(token)
-                    .getBody();
+            claims = jwt.getClaims();
+
+
         } catch (Exception e) {
             LOGGER.info("JWT格式验证失败:{}", token);
         }
@@ -76,8 +83,8 @@ public class JwtTokenUtil {
     public String getUserNameFromToken(String token) {
         String username;
         try {
-            Claims claims = getClaimsFromToken(token);
-            username = claims.getSubject();
+            Map<String,Claim> claims = getClaimsFromToken(token);
+            username = claims.get(CLAIM_KEY_USERNAME).asString();
         } catch (Exception e) {
             username = null;
         }
@@ -107,8 +114,9 @@ public class JwtTokenUtil {
      * 从token中获取过期时间
      */
     private Date getExpiredDateFromToken(String token) {
-        Claims claims = getClaimsFromToken(token);
-        return claims.getExpiration();
+        Map<String, Claim> claims = getClaimsFromToken(token);
+       return claims.get(CLAIM_KEY_CREATED).asDate();
+
     }
 
     /**
@@ -135,7 +143,7 @@ public class JwtTokenUtil {
             return null;
         }
         //token校验不通过
-        Claims claims = getClaimsFromToken(token);
+        Map<String,Claim> claims = getClaimsFromToken(token);
         if(claims==null){
             return null;
         }
@@ -143,12 +151,14 @@ public class JwtTokenUtil {
         if(isTokenExpired(token)){
             return null;
         }
+        Map<String,Object> claim = new HashMap<>(2);
         //如果token在30分钟之内刚刷新过，返回原token
         if(tokenRefreshJustBefore(token,30*60)){
             return token;
         }else{
-            claims.put(CLAIM_KEY_CREATED, new Date());
-            return generateToken(claims);
+            claim.put(CLAIM_KEY_USERNAME,claims.get(CLAIM_KEY_USERNAME).asString());
+            claim.put(CLAIM_KEY_CREATED, new Date());
+            return generateToken(claim);
         }
     }
 
@@ -158,8 +168,8 @@ public class JwtTokenUtil {
      * @param time 指定时间（秒）
      */
     private boolean tokenRefreshJustBefore(String token, int time) {
-        Claims claims = getClaimsFromToken(token);
-        Date created = claims.get(CLAIM_KEY_CREATED, Date.class);
+       Map<String,Claim> claims = getClaimsFromToken(token);
+        Date created = claims.get(CLAIM_KEY_CREATED).asDate();
         Date refreshDate = new Date();
         //刷新时间在创建时间的指定时间内
         if(refreshDate.after(created)&&refreshDate.before(DateUtil.offsetSecond(created,time))){

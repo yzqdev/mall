@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -19,11 +20,11 @@ import java.util.List;
  * Created by macro on 2020/2/4.
  */
 @Controller
-@Api(tags = "UmsMenuController", description = "后台菜单管理")
+@Api(tags = "UmsMenuController", value = "后台菜单管理")
 @RequestMapping("/menu")
 public class UmsMenuController {
 
-    @Autowired
+    @Resource
     private UmsMenuService menuService;
 
     @ApiOperation("添加后台菜单")

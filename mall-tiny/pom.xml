@@ -23,6 +23,11 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <dependencies>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>3.0.1</version>
+        </dependency>
         <!--SpringBoot通用依赖模块-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -82,10 +87,11 @@
         </dependency>
         <!--JWT(Json Web Token)登录支持-->
         <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt</artifactId>
-            <version>0.9.1</version>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>3.18.1</version>
         </dependency>
+
         <!--lombok依赖-->
         <dependency>
             <groupId>org.projectlombok</groupId>
