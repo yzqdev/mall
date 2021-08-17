@@ -1,0 +1,33 @@
+{
+  "name": "mall-admin-web",
+  "version": "1.0.0",
+  "description": "mall后台管理前端",
+  "author": "macro",
+  "private": true,
+  "scripts": {
+    "dev": "yarn&&vite --host",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^0.21.1",
+    "echarts": "^4.9.0",
+    "element-ui": "^2.15.5",
+    "js-cookie": "^3.0.0",
+    "normalize.css": "^8.0.1",
+    "nprogress": "^0.2.0",
+    "prettier": "^2.3.2",
+    "sass": "^1.38.0",
+    "v-charts": "^1.19.0",
+    "v-distpicker": "^1.2.12",
+    "vite": "^2.5.0",
+    "vite-plugin-vue2": "^1.8.1",
+    "vue": "^2.6.14",
+    "vue-router": "^3.5.2",
+    "vuex": "^3.6.2"
+  },
+  "devDependencies": {
+    "svg-sprite-loader": "^6.0.9",
+    "vue-template-compiler": "^2.6.14"
+  }
+}
